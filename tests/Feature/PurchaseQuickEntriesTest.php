@@ -18,8 +18,9 @@ it('hydrates a PurchaseQuickEntry with the cashflow fields the payables screen n
                 'displayed_as' => 'A Grade Coating Ltd',
                 'contact_name' => 'A Grade Coating Ltd',
                 'due_date' => '2026-06-30',
-                'total_amount' => 234.91,
-                'outstanding_amount' => 234.91,
+                // Sage serialises monetary amounts as numeric strings on the wire.
+                'total_amount' => '234.91',
+                'outstanding_amount' => '234.91',
                 'status' => ['id' => 'UNPAID', 'displayed_as' => 'Unpaid'],
                 'contact' => ['id' => 'c-1', 'displayed_as' => 'A Grade Coating Ltd'],
             ]],

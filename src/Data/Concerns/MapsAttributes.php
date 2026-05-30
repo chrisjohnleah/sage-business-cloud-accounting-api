@@ -30,7 +30,17 @@ trait MapsAttributes
     {
         $value = $data[$key] ?? null;
 
-        return is_int($value) || is_float($value) ? (float) $value : null;
+        if (is_int($value) || is_float($value)) {
+            return (float) $value;
+        }
+
+        // Sage serialises monetary amounts as numeric strings (e.g. "367.09")
+        // to preserve decimal precision, so accept those too.
+        if (is_string($value) && is_numeric($value)) {
+            return (float) $value;
+        }
+
+        return null;
     }
 
     /**
@@ -40,7 +50,17 @@ trait MapsAttributes
     {
         $value = $data[$key] ?? null;
 
-        return is_int($value) ? $value : null;
+        if (is_int($value)) {
+            return $value;
+        }
+
+        // Accept numeric strings/floats that represent a whole number
+        // (Sage sometimes sends counts and ids as strings).
+        if ((is_string($value) || is_float($value)) && is_numeric($value) && (float) (int) $value === (float) $value) {
+            return (int) $value;
+        }
+
+        return null;
     }
 
     /**
