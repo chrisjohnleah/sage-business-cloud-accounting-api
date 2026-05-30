@@ -13,6 +13,7 @@ use ChrisJohnLeah\SageAccounting\Requests\Businesses\GetBusinesses;
 use ChrisJohnLeah\SageAccounting\Resources\BusinessesResource;
 use ChrisJohnLeah\SageAccounting\Resources\ContactsResource;
 use ChrisJohnLeah\SageAccounting\Resources\PurchaseInvoicesResource;
+use ChrisJohnLeah\SageAccounting\Resources\PurchaseQuickEntriesResource;
 use Saloon\Contracts\OAuthAuthenticator;
 use Saloon\Http\Auth\AccessTokenAuthenticator;
 
@@ -169,5 +170,10 @@ final class Sage
     public function purchaseInvoices(): PurchaseInvoicesResource
     {
         return new PurchaseInvoicesResource($this);
+    }
+
+    public function purchaseQuickEntries(): PurchaseQuickEntriesResource
+    {
+        return new PurchaseQuickEntriesResource($this);
     }
 }
