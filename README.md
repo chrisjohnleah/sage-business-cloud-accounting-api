@@ -1,20 +1,28 @@
 # Sage Business Cloud Accounting API — PHP SDK
 
-A modern, framework-agnostic PHP SDK for the [Sage Business Cloud Accounting API (v3.1)](https://developer.sage.com/accounting/), built on [Saloon](https://docs.saloon.dev). Typed responses, OAuth2 with rotating-refresh handling, `X-Business` targeting, automatic `$next` pagination, and rate-limit/429 backoff baked in.
+[![CI](https://github.com/chrisjohnleah/sage-business-cloud-accounting-api/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisjohnleah/sage-business-cloud-accounting-api/actions/workflows/ci.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/chrisjohnleah/sage-business-cloud-accounting-api.svg)](https://packagist.org/packages/chrisjohnleah/sage-business-cloud-accounting-api)
+[![PHP Version](https://img.shields.io/packagist/php-v/chrisjohnleah/sage-business-cloud-accounting-api.svg)](https://packagist.org/packages/chrisjohnleah/sage-business-cloud-accounting-api)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> For Laravel apps, see the companion bridge package
+A modern, framework-agnostic PHP SDK for the [Sage Business Cloud Accounting API (v3.1)](https://developer.sage.com/accounting/), built on [Saloon](https://docs.saloon.dev). Typed responses, OAuth2 with rotating-refresh handling, `X-Business` targeting, automatic `$next` pagination, and rate-limit / 429 backoff — all baked in.
+
+> **Using Laravel?** Reach for the companion bridge
 > [`chrisjohnleah/sage-business-cloud-accounting-api-laravel`](https://github.com/chrisjohnleah/sage-business-cloud-accounting-api-laravel)
-> (service provider, Eloquent token store, and artisan commands).
+> for a service provider, an Eloquent token store, and `sage:connect` / `sage:sync` commands.
 
 ## Why this package
 
-The Sage Accounting API has some sharp edges that this SDK handles for you:
+The Sage Accounting API has sharp edges that this SDK smooths over for you:
 
-- **5-minute access tokens + rotating refresh tokens** — refresh tokens are single-use; the SDK surfaces the rotated token so you can persist it.
-- **Mandatory `X-Business` header** — every request must target a specific business.
-- **No webhooks** — incremental polling via `updated_or_created_since` / `deleted_since` is the supported sync model.
-- **Body-based `$next` pagination** — the SDK iterates pages transparently.
-- **Rate limits** — 100 req/min per company; the SDK honours `429 Retry-After` and backs off.
+| Sage quirk | What the SDK does |
+|---|---|
+| **5-minute access tokens** | Refreshes proactively before expiry |
+| **Rotating refresh tokens** (single-use) | Surfaces the rotated token so you can persist it |
+| **Mandatory `X-Business` header** | Applied automatically once a business is selected |
+| **No webhooks** | First-class incremental polling via `updated_or_created_since` / `deleted_since` |
+| **Body-based `$next` pagination** | Iterated transparently — `foreach` over every record |
+| **Rate limits** (100/min per company) | Honours `429 Retry-After` and backs off exponentially |
 
 ## Requirements
 
@@ -27,10 +35,106 @@ The Sage Accounting API has some sharp edges that this SDK handles for you:
 composer require chrisjohnleah/sage-business-cloud-accounting-api
 ```
 
-## Status
+## Quick start
 
-🚧 Early development. v0.1 targets read access to **businesses**, **contacts**, and **purchase invoices**; broader endpoint coverage follows.
+```php
+use ChrisJohnLeah\SageAccounting\Auth\ArrayTokenStore;
+use ChrisJohnLeah\SageAccounting\Sage;
+use ChrisJohnLeah\SageAccounting\SageConnector;
+
+$connector = new SageConnector(
+    clientId: getenv('SAGE_CLIENT_ID'),
+    clientSecret: getenv('SAGE_CLIENT_SECRET'),
+    redirectUri: 'https://your-app.test/oauth/sage/callback',
+    scopes: ['readonly'], // or ['full_access']
+);
+
+// Bring your own persistence (DB, cache…) by implementing TokenStore.
+// ArrayTokenStore keeps tokens in memory — handy for scripts and tests.
+$sage = new Sage($connector, new ArrayTokenStore);
+```
+
+### 1. Send the user to Sage to authorise
+
+```php
+$url   = $sage->authorizationUrl();   // redirect the user here
+$state = $sage->generatedState();     // persist this (session/cache) for the callback
+```
+
+### 2. Handle the callback
+
+```php
+$sage->exchangeCode($_GET['code'], $_GET['state'], $expectedState: $state);
+$sage->resolveBusiness();             // selects + remembers the business to target
+```
+
+### 3. Read data (auto-refreshes, auto-paginates)
+
+```php
+// Every supplier bill updated since a timestamp — typed, across all pages.
+$bills = $sage->purchaseInvoices()->list([
+    'updated_or_created_since' => '2026-05-01T00:00:00Z',
+]);
+
+foreach ($bills as $invoice) {
+    printf(
+        "%s owes %.2f, due %s [%s]\n",
+        $invoice->contactName,
+        $invoice->outstandingAmount ?? 0.0,
+        $invoice->dueDate?->format('Y-m-d') ?? 'n/a',
+        $invoice->status?->displayedAs ?? 'unknown',
+    );
+}
+
+// Suppliers
+foreach ($sage->contacts()->list(['contact_type_id' => 'VENDOR']) as $contact) {
+    echo $contact->name, ' <', $contact->email, ">\n";
+}
+```
+
+## Persisting tokens
+
+Implement [`Contracts\TokenStore`](src/Contracts/TokenStore.php) to store tokens wherever you like (the Laravel bridge ships an Eloquent one). Sage **rotates the refresh token on every refresh**, so your `put()` must always overwrite the previous record:
+
+```php
+use ChrisJohnLeah\SageAccounting\Auth\StoredToken;
+use ChrisJohnLeah\SageAccounting\Contracts\TokenStore;
+
+final class MyTokenStore implements TokenStore
+{
+    public function get(): ?StoredToken { /* load access/refresh/expiresAt/businessId */ }
+    public function put(StoredToken $token): void { /* overwrite */ }
+    public function forget(): void { /* delete */ }
+}
+```
+
+## Coverage
+
+v0.1 focuses on read access to the endpoints needed for cashflow/sync use cases:
+
+- ✅ Businesses
+- ✅ Contacts (suppliers & customers)
+- ✅ Purchase Invoices (supplier bills) + line items
+
+Broader endpoint coverage and write support are planned — see [CHANGELOG.md](CHANGELOG.md).
+
+## Testing
+
+```bash
+composer test      # Pest
+composer analyse   # PHPStan (max)
+composer lint      # Pint --test
+composer check     # all three
+```
+
+Tests never hit the network — every request is faked with Saloon's `MockClient`.
+
+## Contributing
+
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately per [SECURITY.md](SECURITY.md).
 
 ## Licence
 
-MIT © Chris John Leah
+MIT © [Chris John Leah](https://github.com/chrisjohnleah). See [LICENSE](LICENSE).
+
+> Not affiliated with or endorsed by The Sage Group plc. "Sage" is a trademark of its respective owner.
