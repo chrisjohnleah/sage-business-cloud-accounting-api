@@ -102,7 +102,10 @@ class SageConnector extends Connector implements HasPagination
             ->setRedirectUri($this->redirectUri)
             ->setDefaultScopes($this->scopes)
             ->setAuthorizeEndpoint($this->authorizeEndpoint)
-            ->setTokenEndpoint($this->tokenEndpoint);
+            ->setTokenEndpoint($this->tokenEndpoint)
+            // Saloon v4 blocks absolute endpoints (SSRF guard); the OAuth token
+            // endpoint is absolute, so opt in or refresh/exchange fails.
+            ->setAllowBaseUrlOverride(true);
     }
 
     public function paginate(Request $request): Paginator
