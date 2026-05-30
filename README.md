@@ -1,9 +1,10 @@
 # Sage Business Cloud Accounting API — PHP SDK
 
 [![CI](https://github.com/chrisjohnleah/sage-business-cloud-accounting-api/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisjohnleah/sage-business-cloud-accounting-api/actions/workflows/ci.yml)
-[![Packagist Version](https://img.shields.io/packagist/v/chrisjohnleah/sage-business-cloud-accounting-api.svg)](https://packagist.org/packages/chrisjohnleah/sage-business-cloud-accounting-api)
-[![PHP Version](https://img.shields.io/packagist/php-v/chrisjohnleah/sage-business-cloud-accounting-api.svg)](https://packagist.org/packages/chrisjohnleah/sage-business-cloud-accounting-api)
+[![PHP Version](https://img.shields.io/badge/php-%E2%89%A58.3-777bb4.svg)](https://php.net)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+<!-- Once published, add: [![Packagist](https://img.shields.io/packagist/v/chrisjohnleah/sage-business-cloud-accounting-api.svg)](https://packagist.org/packages/chrisjohnleah/sage-business-cloud-accounting-api) -->
 
 A modern, framework-agnostic PHP SDK for the [Sage Business Cloud Accounting API (v3.1)](https://developer.sage.com/accounting/), built on [Saloon](https://docs.saloon.dev). Typed responses, OAuth2 with rotating-refresh handling, `X-Business` targeting, automatic `$next` pagination, and rate-limit / 429 backoff — all baked in.
 

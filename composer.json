@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": "^8.3",
-        "saloonphp/saloon": "^3.0 || ^4.0",
+        "saloonphp/saloon": "^4.0",
         "saloonphp/pagination-plugin": "^2.0",
         "saloonphp/rate-limit-plugin": "^2.0"
     },
