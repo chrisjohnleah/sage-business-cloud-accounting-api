@@ -6,14 +6,14 @@ use ChrisJohnLeah\SageAccounting\Data\Address;
 use ChrisJohnLeah\SageAccounting\Data\Contact;
 use ChrisJohnLeah\SageAccounting\Data\Paginated;
 use ChrisJohnLeah\SageAccounting\Data\Reference;
-use ChrisJohnLeah\SageAccounting\Requests\GetContactsRequest;
+use ChrisJohnLeah\SageAccounting\Requests\Contacts\GetContacts;
 use ChrisJohnLeah\SageAccounting\SageConnector;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
 it('hydrates a Contact DTO including its main address and contact types', function () {
     $mock = new MockClient([
-        GetContactsRequest::class => MockResponse::make([
+        GetContacts::class => MockResponse::make([
             '$total' => 1,
             '$page' => 1,
             '$next' => null,
@@ -56,7 +56,7 @@ it('hydrates a Contact DTO including its main address and contact types', functi
     );
     $connector->withMockClient($mock);
 
-    $page = $connector->send(new GetContactsRequest())->dto();
+    $page = $connector->send(new GetContacts())->dto();
 
     expect($page)->toBeInstanceOf(Paginated::class)
         ->and($page->items)->toHaveCount(1);
@@ -85,7 +85,7 @@ it('hydrates a Contact DTO including its main address and contact types', functi
 
 it('requests attributes=all on the contacts endpoint', function () {
     $mock = new MockClient([
-        GetContactsRequest::class => MockResponse::make(['$items' => []]),
+        GetContacts::class => MockResponse::make(['$items' => []]),
     ]);
 
     $connector = new SageConnector(
@@ -97,7 +97,7 @@ it('requests attributes=all on the contacts endpoint', function () {
     );
     $connector->withMockClient($mock);
 
-    $connector->send(new GetContactsRequest());
+    $connector->send(new GetContacts(['attributes' => 'all']));
 
     $mock->assertSent(function ($request): bool {
         return $request->query()->get('attributes') === 'all';
@@ -127,7 +127,7 @@ it('walks every contact page via the $next URL in the response body', function (
 
     $ids = [];
 
-    foreach ($connector->paginate(new GetContactsRequest())->items() as $item) {
+    foreach ($connector->paginate(new GetContacts())->items() as $item) {
         $ids[] = $item['id'];
     }
 

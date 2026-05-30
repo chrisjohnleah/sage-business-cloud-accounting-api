@@ -6,36 +6,42 @@ namespace ChrisJohnLeah\SageAccounting\Data;
 
 use ChrisJohnLeah\SageAccounting\Data\Concerns\MapsAttributes;
 
-/**
- * A single line on a purchase invoice — the goods/services bought, with their
- * net, tax and gross amounts in both the document and the base currency.
- */
 final readonly class PurchaseInvoiceLineItem
 {
     use MapsAttributes;
 
+    /**
+     * @param  list<AnalysisTypeLineItem>  $analysisTypeCategories
+     * @param  list<TaxBreakdown>  $taxBreakdown
+     * @param  list<TaxBreakdown>  $baseCurrencyTaxBreakdown
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $displayedAs = null,
+        public ?bool $isPurchaseForResale = null,
+        public array $analysisTypeCategories = [],
         public ?string $description = null,
+        public ?Product $product = null,
+        public ?Service $service = null,
+        public ?Reference $ledgerAccount = null,
+        public ?bool $tradeOfAsset = null,
         public ?float $quantity = null,
         public ?float $unitPrice = null,
         public ?float $netAmount = null,
+        public ?Reference $taxRate = null,
         public ?float $taxAmount = null,
+        public array $taxBreakdown = [],
         public ?float $totalAmount = null,
         public ?float $baseCurrencyUnitPrice = null,
+        public ?bool $unitPriceIncludesTax = null,
         public ?float $baseCurrencyNetAmount = null,
         public ?float $baseCurrencyTaxAmount = null,
+        public array $baseCurrencyTaxBreakdown = [],
         public ?float $baseCurrencyTotalAmount = null,
-        public ?bool $unitPriceIncludesTax = null,
-        public ?bool $isPurchaseForResale = null,
-        public ?bool $tradeOfAsset = null,
-        public ?bool $taxRecoverable = null,
+        public ?Reference $euGoodsServicesType = null,
         public ?float $gstAmount = null,
         public ?float $pstAmount = null,
-        public ?Reference $ledgerAccount = null,
-        public ?Reference $taxRate = null,
-        public ?Reference $euGoodsServicesType = null,
+        public ?bool $taxRecoverable = null,
     ) {
     }
 
@@ -47,30 +53,30 @@ final readonly class PurchaseInvoiceLineItem
         return new self(
             id: self::string($data, 'id'),
             displayedAs: self::string($data, 'displayed_as'),
+            isPurchaseForResale: self::boolean($data, 'is_purchase_for_resale'),
+            analysisTypeCategories: array_map(static fn (array $item): AnalysisTypeLineItem => AnalysisTypeLineItem::fromArray($item), self::nestedList($data, 'analysis_type_categories')),
             description: self::string($data, 'description'),
+            product: Product::fromNullable(self::nested($data, 'product')),
+            service: Service::fromNullable(self::nested($data, 'service')),
+            ledgerAccount: Reference::fromNullable(self::nested($data, 'ledger_account')),
+            tradeOfAsset: self::boolean($data, 'trade_of_asset'),
             quantity: self::float($data, 'quantity'),
             unitPrice: self::float($data, 'unit_price'),
             netAmount: self::float($data, 'net_amount'),
+            taxRate: Reference::fromNullable(self::nested($data, 'tax_rate')),
             taxAmount: self::float($data, 'tax_amount'),
+            taxBreakdown: array_map(static fn (array $item): TaxBreakdown => TaxBreakdown::fromArray($item), self::nestedList($data, 'tax_breakdown')),
             totalAmount: self::float($data, 'total_amount'),
             baseCurrencyUnitPrice: self::float($data, 'base_currency_unit_price'),
+            unitPriceIncludesTax: self::boolean($data, 'unit_price_includes_tax'),
             baseCurrencyNetAmount: self::float($data, 'base_currency_net_amount'),
             baseCurrencyTaxAmount: self::float($data, 'base_currency_tax_amount'),
+            baseCurrencyTaxBreakdown: array_map(static fn (array $item): TaxBreakdown => TaxBreakdown::fromArray($item), self::nestedList($data, 'base_currency_tax_breakdown')),
             baseCurrencyTotalAmount: self::float($data, 'base_currency_total_amount'),
-            unitPriceIncludesTax: self::boolean($data, 'unit_price_includes_tax'),
-            isPurchaseForResale: self::boolean($data, 'is_purchase_for_resale'),
-            tradeOfAsset: self::boolean($data, 'trade_of_asset'),
-            taxRecoverable: self::boolean($data, 'tax_recoverable'),
+            euGoodsServicesType: Reference::fromNullable(self::nested($data, 'eu_goods_services_type')),
             gstAmount: self::float($data, 'gst_amount'),
             pstAmount: self::float($data, 'pst_amount'),
-            ledgerAccount: Reference::fromNullable(self::nested($data, 'ledger_account')),
-            taxRate: Reference::fromNullable(self::nested($data, 'tax_rate')),
-            euGoodsServicesType: Reference::fromNullable(self::nested($data, 'eu_goods_services_type')),
-            // v0.1: not yet typed — analysis_type_categories
-            // v0.1: not yet typed — product
-            // v0.1: not yet typed — service
-            // v0.1: not yet typed — tax_breakdown
-            // v0.1: not yet typed — base_currency_tax_breakdown
+            taxRecoverable: self::boolean($data, 'tax_recoverable'),
         );
     }
 

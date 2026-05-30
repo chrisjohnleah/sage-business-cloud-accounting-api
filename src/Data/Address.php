@@ -7,10 +7,6 @@ namespace ChrisJohnLeah\SageAccounting\Data;
 use ChrisJohnLeah\SageAccounting\Data\Concerns\MapsAttributes;
 use DateTimeImmutable;
 
-/**
- * A postal address attached to a {@see Contact} (or a business). Sage exposes
- * both a contact's main and delivery addresses as full address objects.
- */
 final readonly class Address
 {
     use MapsAttributes;

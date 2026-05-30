@@ -7,7 +7,7 @@ use ChrisJohnLeah\SageAccounting\Data\Paginated;
 use ChrisJohnLeah\SageAccounting\Data\PurchaseInvoice;
 use ChrisJohnLeah\SageAccounting\Data\PurchaseInvoiceLineItem;
 use ChrisJohnLeah\SageAccounting\Data\Reference;
-use ChrisJohnLeah\SageAccounting\Requests\GetPurchaseInvoicesRequest;
+use ChrisJohnLeah\SageAccounting\Requests\PurchaseInvoices\GetPurchaseInvoices;
 use ChrisJohnLeah\SageAccounting\SageConnector;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -15,7 +15,7 @@ use Saloon\Http\PendingRequest;
 
 it('hydrates a PurchaseInvoice with the cashflow fields the payables screen needs', function () {
     $mock = new MockClient([
-        GetPurchaseInvoicesRequest::class => MockResponse::make([
+        GetPurchaseInvoices::class => MockResponse::make([
             '$total' => 1,
             '$page' => 1,
             '$next' => null,
@@ -65,7 +65,7 @@ it('hydrates a PurchaseInvoice with the cashflow fields the payables screen need
     );
     $connector->withMockClient($mock);
 
-    $page = $connector->send(new GetPurchaseInvoicesRequest())->dto();
+    $page = $connector->send(new GetPurchaseInvoices())->dto();
 
     expect($page)->toBeInstanceOf(Paginated::class)
         ->and($page->items)->toHaveCount(1);
@@ -90,7 +90,7 @@ it('hydrates a PurchaseInvoice with the cashflow fields the payables screen need
 
 it('requests the full attribute set via attributes=all', function () {
     $mock = new MockClient([
-        GetPurchaseInvoicesRequest::class => MockResponse::make(['$items' => []]),
+        GetPurchaseInvoices::class => MockResponse::make(['$items' => []]),
     ]);
 
     $connector = new SageConnector(
@@ -107,7 +107,7 @@ it('requests the full attribute set via attributes=all', function () {
         $query = $pending->query()->all();
     });
 
-    $connector->send(new GetPurchaseInvoicesRequest());
+    $connector->send(new GetPurchaseInvoices(['attributes' => 'all']));
 
     expect($query)->toMatchArray(['attributes' => 'all']);
 });
@@ -135,7 +135,7 @@ it('walks every purchase invoice across pages via the $next URL', function () {
 
     $ids = [];
 
-    foreach ($connector->paginate(new GetPurchaseInvoicesRequest())->items() as $item) {
+    foreach ($connector->paginate(new GetPurchaseInvoices())->items() as $item) {
         $ids[] = $item['id'];
     }
 

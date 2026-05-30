@@ -14,5 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TokenStore` contract with an in-memory `ArrayTokenStore`.
 - Typed DTOs: `Business`, `Contact`, `Address`, `PurchaseInvoice`, `PurchaseInvoiceLineItem`, `Transaction`, `Reference`, `Link`, and the `Paginated` envelope.
 - Resources: `businesses()`, `contacts()`, `purchaseInvoices()` with lazy pagination.
+- **Full API coverage**: a typed DTO for every schema (200+) and a request class for every operation (280+, including writes), generated from the OpenAPI spec via `tools/generate.php`.
+- Contract tests asserting every spec schema and operation has a generated class.
 
 [Unreleased]: https://github.com/chrisjohnleah/sage-business-cloud-accounting-api/commits/main

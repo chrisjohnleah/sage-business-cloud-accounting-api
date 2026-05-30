@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChrisJohnLeah\SageAccounting\Resources;
 
 use ChrisJohnLeah\SageAccounting\Data\Business;
-use ChrisJohnLeah\SageAccounting\Requests\GetBusinessesRequest;
+use ChrisJohnLeah\SageAccounting\Requests\Businesses\GetBusinesses;
 use ChrisJohnLeah\SageAccounting\Sage;
 
 final readonly class BusinessesResource
@@ -22,7 +22,7 @@ final readonly class BusinessesResource
      */
     public function list(array $filters = []): iterable
     {
-        $paginator = $this->sage->connector()->paginate(new GetBusinessesRequest($filters));
+        $paginator = $this->sage->connector()->paginate(new GetBusinesses($filters));
 
         foreach ($paginator->items() as $item) {
             if (is_array($item)) {

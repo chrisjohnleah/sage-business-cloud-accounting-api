@@ -114,4 +114,27 @@ trait MapsAttributes
 
         return $items;
     }
+
+    /**
+     * A list of scalar values (e.g. an array of strings).
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<mixed>
+     */
+    protected static function rawList(array $data, string $key): array
+    {
+        $value = $data[$key] ?? null;
+
+        return is_array($value) ? array_values($value) : [];
+    }
+
+    /**
+     * A raw, untyped value passed through as-is.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected static function raw(array $data, string $key): mixed
+    {
+        return $data[$key] ?? null;
+    }
 }

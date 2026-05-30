@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChrisJohnLeah\SageAccounting\Resources;
 
 use ChrisJohnLeah\SageAccounting\Data\PurchaseInvoice;
-use ChrisJohnLeah\SageAccounting\Requests\GetPurchaseInvoicesRequest;
+use ChrisJohnLeah\SageAccounting\Requests\PurchaseInvoices\GetPurchaseInvoices;
 use ChrisJohnLeah\SageAccounting\Sage;
 
 final readonly class PurchaseInvoicesResource
@@ -25,7 +25,9 @@ final readonly class PurchaseInvoicesResource
      */
     public function list(array $filters = []): iterable
     {
-        $paginator = $this->sage->connector()->paginate(new GetPurchaseInvoicesRequest($filters));
+        $paginator = $this->sage->connector()->paginate(
+            new GetPurchaseInvoices(array_merge(['attributes' => 'all'], $filters)),
+        );
 
         foreach ($paginator->items() as $item) {
             if (is_array($item)) {

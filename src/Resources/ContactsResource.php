@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChrisJohnLeah\SageAccounting\Resources;
 
 use ChrisJohnLeah\SageAccounting\Data\Contact;
-use ChrisJohnLeah\SageAccounting\Requests\GetContactsRequest;
+use ChrisJohnLeah\SageAccounting\Requests\Contacts\GetContacts;
 use ChrisJohnLeah\SageAccounting\Sage;
 
 final readonly class ContactsResource
@@ -25,7 +25,9 @@ final readonly class ContactsResource
      */
     public function list(array $filters = []): iterable
     {
-        $paginator = $this->sage->connector()->paginate(new GetContactsRequest($filters));
+        $paginator = $this->sage->connector()->paginate(
+            new GetContacts(array_merge(['attributes' => 'all'], $filters)),
+        );
 
         foreach ($paginator->items() as $item) {
             if (is_array($item)) {

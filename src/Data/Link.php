@@ -6,9 +6,6 @@ namespace ChrisJohnLeah\SageAccounting\Data;
 
 use ChrisJohnLeah\SageAccounting\Data\Concerns\MapsAttributes;
 
-/**
- * A HATEOAS link returned in an entity's "links" collection.
- */
 final readonly class Link
 {
     use MapsAttributes;
@@ -30,5 +27,13 @@ final readonly class Link
             rel: self::string($data, 'rel'),
             type: self::string($data, 'type'),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     */
+    public static function fromNullable(?array $data): ?self
+    {
+        return $data === null ? null : self::fromArray($data);
     }
 }

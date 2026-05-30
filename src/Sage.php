@@ -9,7 +9,7 @@ use ChrisJohnLeah\SageAccounting\Contracts\TokenStore;
 use ChrisJohnLeah\SageAccounting\Data\Business;
 use ChrisJohnLeah\SageAccounting\Data\Paginated;
 use ChrisJohnLeah\SageAccounting\Exceptions\NotConnectedException;
-use ChrisJohnLeah\SageAccounting\Requests\GetBusinessesRequest;
+use ChrisJohnLeah\SageAccounting\Requests\Businesses\GetBusinesses;
 use ChrisJohnLeah\SageAccounting\Resources\BusinessesResource;
 use ChrisJohnLeah\SageAccounting\Resources\ContactsResource;
 use ChrisJohnLeah\SageAccounting\Resources\PurchaseInvoicesResource;
@@ -135,7 +135,7 @@ final class Sage
      */
     public function resolveBusiness(): ?Business
     {
-        $page = $this->connector()->send(new GetBusinessesRequest())->dtoOrFail();
+        $page = $this->connector()->send(new GetBusinesses())->dtoOrFail();
 
         if (! $page instanceof Paginated || $page->items === []) {
             return null;

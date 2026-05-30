@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use ChrisJohnLeah\SageAccounting\Data\Business;
 use ChrisJohnLeah\SageAccounting\Data\Paginated;
-use ChrisJohnLeah\SageAccounting\Requests\GetBusinessesRequest;
+use ChrisJohnLeah\SageAccounting\Requests\Businesses\GetBusinesses;
 use ChrisJohnLeah\SageAccounting\SageConnector;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -28,7 +28,7 @@ function sageConnector(MockClient $mock): SageConnector
 
 it('hydrates a Business DTO from the collection envelope', function () {
     $mock = new MockClient([
-        GetBusinessesRequest::class => MockResponse::make([
+        GetBusinesses::class => MockResponse::make([
             '$total' => 1,
             '$page' => 1,
             '$next' => null,
@@ -43,7 +43,7 @@ it('hydrates a Business DTO from the collection envelope', function () {
         ]),
     ]);
 
-    $page = sageConnector($mock)->send(new GetBusinessesRequest())->dto();
+    $page = sageConnector($mock)->send(new GetBusinesses())->dto();
 
     expect($page)->toBeInstanceOf(Paginated::class)
         ->and($page->total)->toBe(1)
@@ -60,7 +60,7 @@ it('hydrates a Business DTO from the collection envelope', function () {
 
 it('sends the X-Business header on every request', function () {
     $mock = new MockClient([
-        GetBusinessesRequest::class => MockResponse::make(['$items' => []]),
+        GetBusinesses::class => MockResponse::make(['$items' => []]),
     ]);
 
     $connector = sageConnector($mock);
@@ -72,7 +72,7 @@ it('sends the X-Business header on every request', function () {
         $header = $pending->headers()->get('X-Business');
     });
 
-    $connector->send(new GetBusinessesRequest());
+    $connector->send(new GetBusinesses());
 
     expect($header)->toBe('biz-guid-1');
 });
@@ -94,7 +94,7 @@ it('walks every page via the $next URL in the response body', function () {
 
     $ids = [];
 
-    foreach ($connector->paginate(new GetBusinessesRequest())->items() as $item) {
+    foreach ($connector->paginate(new GetBusinesses())->items() as $item) {
         $ids[] = $item['id'];
     }
 
@@ -117,7 +117,7 @@ it('points the second page request at the absolute $next URL', function () {
         $urls[] = $pending->getUrl();
     });
 
-    iterator_to_array($connector->paginate(new GetBusinessesRequest())->items(), false);
+    iterator_to_array($connector->paginate(new GetBusinesses())->items(), false);
 
     expect($urls)->toHaveCount(2)
         ->and($urls[0])->toBe('https://api.accounting.sage.com/v3.1/businesses')

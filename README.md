@@ -110,13 +110,25 @@ final class MyTokenStore implements TokenStore
 
 ## Coverage
 
-v0.1 focuses on read access to the endpoints needed for cashflow/sync use cases:
+**The entire Sage Accounting v3.1 API.** Every schema (200+) has a typed DTO and every operation (280+, including writes) has a request class — generated from the OpenAPI spec and verified by contract tests, so coverage can't silently regress.
 
-- ✅ Businesses
-- ✅ Contacts (suppliers & customers)
-- ✅ Purchase Invoices (supplier bills) + line items
+Ergonomic, lazily-paginated resources are provided for the common entities (`businesses()`, `contacts()`, `purchaseInvoices()`); every other endpoint is reachable by sending its generated request through `$sage->connector()`:
 
-Broader endpoint coverage and write support are planned — see [CHANGELOG.md](CHANGELOG.md).
+```php
+use ChrisJohnLeah\SageAccounting\Requests\LedgerAccounts\GetLedgerAccounts;
+use ChrisJohnLeah\SageAccounting\Requests\Contacts\PostContacts;
+
+$ledgers = $sage->connector()->send(new GetLedgerAccounts(['attributes' => 'all']))->dto();
+$created = $sage->connector()->send(new PostContacts(['contact' => [/* ... */]]))->dto();
+```
+
+### Regenerating from the spec
+
+```bash
+php tools/generate.php   # re-reads resources/openapi/sage-accounting-3.1.0.json
+```
+
+The hand-crafted core (connector, OAuth, paginator, client, `Reference`/`Paginated`) is never touched — only the leaf DTOs and request classes are generated.
 
 ## Testing
 

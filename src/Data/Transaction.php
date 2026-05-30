@@ -7,11 +7,6 @@ namespace ChrisJohnLeah\SageAccounting\Data;
 use ChrisJohnLeah\SageAccounting\Data\Concerns\MapsAttributes;
 use DateTimeImmutable;
 
-/**
- * Sage's posted transaction — the ledger record that a purchase invoice (and
- * other documents) post against. On the cashflow screen it links an invoice to
- * its underlying journal so totals can be reconciled.
- */
 final readonly class Transaction
 {
     use MapsAttributes;
@@ -29,6 +24,7 @@ final readonly class Transaction
         public ?float $totalInTransactionCurrency = null,
         public ?Reference $contact = null,
         public ?Reference $transactionType = null,
+        public ?TransactionOrigin $origin = null,
         public ?string $auditTrailId = null,
         public ?string $numberOfAttachments = null,
     ) {
@@ -52,9 +48,9 @@ final readonly class Transaction
             totalInTransactionCurrency: self::float($data, 'total_in_transaction_currency'),
             contact: Reference::fromNullable(self::nested($data, 'contact')),
             transactionType: Reference::fromNullable(self::nested($data, 'transaction_type')),
+            origin: TransactionOrigin::fromNullable(self::nested($data, 'origin')),
             auditTrailId: self::string($data, 'audit_trail_id'),
             numberOfAttachments: self::string($data, 'number_of_attachments'),
-            // v0.1: not yet typed — origin (TransactionOrigin)
         );
     }
 
